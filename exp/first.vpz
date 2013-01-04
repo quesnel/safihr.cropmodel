@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE vle_project PUBLIC "-//VLE TEAM//DTD Strict//EN" "http://www.vle-project.org/vle-1.1.0.dtd">
+<vle_project version="1.1.0" date="2013-Sep-10 16:12:53" author="Gauthier Quesnel">
+<structures>
+<model name="x" type="coupled" x="0" y="0" width="860" height="733"  >
+<submodels>
+<model name="1" type="atomic" conditions="species" dynamics="dyncrop" observables="crop" x="240" y="68" width="100" height="60" >
+<in>
+ <port name="in" />
+ <port name="start" />
+</in>
+<out>
+ <port name="out" />
+</out>
+</model>
+<model name="2" type="atomic" conditions="species" dynamics="dyncrop" observables="crop" x="386" y="98" width="100" height="60" >
+<in>
+ <port name="in" />
+ <port name="start" />
+</in>
+<out>
+ <port name="out" />
+</out>
+</model>
+<model name="3" type="atomic" conditions="species" dynamics="dyncrop" observables="crop" x="600" y="129" width="100" height="60" >
+<in>
+ <port name="in" />
+ <port name="start" />
+</in>
+<out>
+ <port name="out" />
+</out>
+</model>
+<model name="4" type="atomic" conditions="species" dynamics="dyncrop" observables="crop" x="720" y="350" width="100" height="60" >
+<in>
+ <port name="in" />
+ <port name="start" />
+</in>
+<out>
+ <port name="out" />
+</out>
+</model>
+<model name="5" type="atomic" conditions="species" dynamics="dyncrop" observables="crop" x="214" y="612" width="100" height="60" >
+<in>
+ <port name="in" />
+ <port name="start" />
+</in>
+<out>
+ <port name="out" />
+</out>
+</model>
+<model name="6" type="atomic" conditions="species" dynamics="dyncrop" observables="crop" x="422" y="633" width="100" height="60" >
+<in>
+ <port name="in" />
+ <port name="start" />
+</in>
+<out>
+ <port name="out" />
+</out>
+</model>
+<model name="7" type="atomic" conditions="species" dynamics="dyncrop" observables="crop" x="641" y="607" width="100" height="60" >
+<in>
+ <port name="in" />
+ <port name="start" />
+</in>
+<out>
+ <port name="out" />
+</out>
+</model>
+<model name="agent" type="atomic" conditions="agent" dynamics="ai" observables="ai" x="423" y="373" width="100" height="45" >
+<in>
+ <port name="in" />
+</in>
+<out>
+ <port name="start" />
+</out>
+</model>
+<model name="meteo" type="atomic" conditions="meteo" dynamics="meteo" x="46" y="288" width="100" height="45" >
+<out>
+ <port name="out" />
+</out>
+</model>
+</submodels>
+<connections>
+<connection type="internal">
+ <origin model="1" port="out" />
+ <destination model="agent" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="2" port="out" />
+ <destination model="agent" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="3" port="out" />
+ <destination model="agent" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="4" port="out" />
+ <destination model="agent" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="5" port="out" />
+ <destination model="agent" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="6" port="out" />
+ <destination model="agent" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="7" port="out" />
+ <destination model="agent" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="agent" port="start" />
+ <destination model="1" port="start" />
+</connection>
+<connection type="internal">
+ <origin model="agent" port="start" />
+ <destination model="2" port="start" />
+</connection>
+<connection type="internal">
+ <origin model="agent" port="start" />
+ <destination model="3" port="start" />
+</connection>
+<connection type="internal">
+ <origin model="agent" port="start" />
+ <destination model="4" port="start" />
+</connection>
+<connection type="internal">
+ <origin model="agent" port="start" />
+ <destination model="5" port="start" />
+</connection>
+<connection type="internal">
+ <origin model="agent" port="start" />
+ <destination model="6" port="start" />
+</connection>
+<connection type="internal">
+ <origin model="agent" port="start" />
+ <destination model="7" port="start" />
+</connection>
+<connection type="internal">
+ <origin model="meteo" port="out" />
+ <destination model="1" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="meteo" port="out" />
+ <destination model="2" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="meteo" port="out" />
+ <destination model="3" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="meteo" port="out" />
+ <destination model="4" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="meteo" port="out" />
+ <destination model="5" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="meteo" port="out" />
+ <destination model="6" port="in" />
+</connection>
+<connection type="internal">
+ <origin model="meteo" port="out" />
+ <destination model="7" port="in" />
+</connection>
+</connections>
+</model>
+</structures>
+<dynamics>
+<dynamic name="ai" library="MinimalistAI" package="safihr.cropmodel"  />
+<dynamic name="dyncrop" library="GenericCropModel" package="safihr.cropmodel"  />
+<dynamic name="meteo" library="Meteo" package="safihr.cropmodel"  />
+</dynamics>
+<experiment name="First" duration="1500.000000000000000" begin="2448623.000000000000000" combination="linear"  >
+<conditions>
+<condition name="agent" >
+ <port name="filename" >
+<string>date_semis.csv</string>
+</port>
+</condition>
+<condition name="meteo" >
+ <port name="filename" >
+<string>luneray_temp-1992-2011.csv</string>
+</port>
+</condition>
+<condition name="species" >
+ <port name="filename" >
+<string>CULTURES.csv</string>
+</port>
+ <port name="latitude" >
+<double>172.000000000000000</double>
+</port>
+</condition>
+</conditions>
+<views>
+<outputs>
+<output name="default" location="" format="local" package="vle.output"  plugin="file" >
+<map><key name="flush-by-bag"><boolean>false</boolean></key><key name="julian-day"><boolean>true</boolean></key><key name="locale"><string>C</string></key><key name="type"><string>rdata</string></key></map></output>
+
+<output name="event" location="" format="local" package="vle.output"  plugin="file" >
+<map><key name="flush-by-bag"><boolean>false</boolean></key><key name="julian-day"><boolean>false</boolean></key><key name="locale"><string>C</string></key><key name="type"><string>rdata</string></key></map></output>
+
+</outputs>
+<observables>
+<observable name="ai" >
+<port name="BET" >
+ <attachedview name="event" />
+</port>
+
+<port name="BLE" >
+ <attachedview name="event" />
+</port>
+
+<port name="COLZA" >
+ <attachedview name="event" />
+</port>
+
+<port name="LIN" >
+ <attachedview name="event" />
+</port>
+
+<port name="MAIS" >
+ <attachedview name="event" />
+</port>
+
+<port name="PDT" >
+ <attachedview name="event" />
+</port>
+
+<port name="POIS" >
+ <attachedview name="event" />
+</port>
+
+</observable>
+
+<observable name="crop" >
+<port name="name" >
+ <attachedview name="default" />
+</port>
+
+<port name="status" >
+ <attachedview name="default" />
+</port>
+
+</observable>
+
+<observable name="meteo" >
+<port name="tmax" >
+ <attachedview name="default" />
+</port>
+
+<port name="tmin" >
+ <attachedview name="default" />
+</port>
+
+<port name="tmoy" >
+ <attachedview name="default" />
+</port>
+
+</observable>
+
+</observables>
+<view name="default" output="default" type="timed" timestep="1.000000000000000" />
+
+<view name="event" output="event" type="event" />
+
+</views>
+</experiment>
+</vle_project>

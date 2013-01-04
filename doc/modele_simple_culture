@@ -1,0 +1,85 @@
+%%%Objectif : déterminer l'atteinte du stade de maturité pour la récolte (MAT)
+%%% Il pourra être utilisé pour le blé, l'orge, pois, colza - à voir Betterave et Pomme de terre (les paramètres sont définis pour la récolte des semances et non des racines) 
+MAT= f(TDEV,FV,FP,LEV)
+TDEV = température efficace pour le développement de la culture
+FV = Facteur de Vernalisation
+FP = Facteur de la Photopériode
+DATE_LEV = Date de levée
+
+
+%%%Calcul de la température de développement au jour (i) (TDEV(i))
+Tmoy = température moyenne journalière
+TMAXDEV et TBASE : paramètres de la culture simulée
+
+Si (Tmoy(i) => TMAXDEV) alors (TDEV(i) = TMAXDEV)
+Sinon (TDEV(i) = Tmoy(i)-TBASE)
+
+
+
+%%%Calcul de la date de levée (DATE_LEV)
+SEM_LEV : paramètres de la culture
+
+DATE_LEV est atteinte Lorsque la somme des TDEV depuis la date de semis atteint la valeur SEM_LEV
+
+
+%%%%%Calcul du facteur de vernalisation au jour (i) (FV(i))
+Paramètres de la culture à considérer : TFROID - AMPFROID - VBASE - VSAT
+Variables temporaires pour le calcul de FV : JVI - VDD
+
+
+if (TFROID==999.99) {JVI[j]<-0}
+else {JVI[i]<-max(0,(1-((TFROID-Tmoy[i])/AMPFROID)^2))} }
+
+
+si (Jour[i]<Jour_levee) {VDD[i]<-0}
+sinon {VDD[i]<-VDD[i-1]+JVI[i]}
+
+
+Si (VBASE==1) alors {FV[i] = 1}
+Sinon {FV[i] = max(0,min(1,((VDD[i-1]-VBASE)/(VSAT-VBASE))))}
+
+%%%%%Calcul du facteur photopériode au jour (i) (FP(i))
+Paramètres de la culture à considérer : POPT - PBASE
+Paramètre géographique : LATITUDE (en degré)
+Variables temporaires pour le calcul de FP : Ph, TETA1, TETA2, TETA, Dec, D, JJulien, LAT, Pr
+
+JJulien(i) = numéro du jour (i) compris entre 1 et 365 
+
+TETA1[i] = (2*pi*(Jjulien[i]-80)/365)
+
+TETA2[i] = (0.0335*(sin(2*pi*Jjulien[i])-sin(2*pi*80)))/365
+
+TETA[i] = TETA1[i] + TETA2[i]
+
+Dec[i] = asin(0.3978*sin(TETA[i]))
+
+Lat = (pi*LATITUDE)/180
+
+D[i]<-(-0.10453/cos(Lat))*cos(Dec[i])
+
+Pr[i]<-acos(D[i]-(tan(Lat)*tan(Dec[i])))
+
+Ph[i] = 24*Pr[j]/pi
+
+si (PBASE==999.9) {FP[i] = 1}
+sinon {FP[i] = max(0,(Ph[i]-PBASE)/(POPT-PBASE))}
+
+
+%%%%%%Calcul de la date de maturité (MAT)
+
+Atteinte d'un seuil LEV_MAT qui se calcule en sommant les TDEV affectées des facteurs FV et FP
+C'est un calcul de somme des températures que l'on nomme ici UDEV (unité de développement)
+
+UDEV(i) = UDEV(i-1) + TDEV*FV*FP
+pour i démarrant à DATE_LEV
+Lorsque UDEV atteint la valeur LEV_MAT alors la récolte est possible. 
+
+
+%%%%autre modèle pour le lin 
+Pour le lin ce que j'ai trouvé c'est une somme des températures en base 5 : Somme de ((Tmin + Tmax)/2) -5)
+Semis - levée : 50 degrés
+levée - floraison : 500 degrés
+floraison - maturité des fibres : 400 degrés
+
+%%%%%%%%Questions
+BS : LEV_MAT = 800 ????

@@ -1,0 +1,12 @@
+Package: safihr.cropmodel
+Version: 0.1.0
+Depends: vle.output
+Build-Depends: 
+Conflicts:
+Maintainer: Gauthier Quesnel <quesnel@users.sourceforge.net>
+Description: A generic crop model
+ .
+Tags: examples
+Url: http://www.vle-project.org/pub/1.1
+Size: 0
+MD5sum: 
