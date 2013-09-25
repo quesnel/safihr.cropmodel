@@ -12,7 +12,7 @@ Tmoy = température moyenne journalière
 TMAXDEV et TBASE : paramètres de la culture simulée
 
 Si (Tmoy(i) => TMAXDEV) alors (TDEV(i) = TMAXDEV)
-Sinon (TDEV(i) = Tmoy(i)-TBASE)
+Sinon TDEV(i) = max (0 ; (Tmoy(i)-TBASE))
 
 
 
@@ -70,8 +70,10 @@ sinon {FP[i] = max(0,(Ph[i]-PBASE)/(POPT-PBASE))}
 Atteinte d'un seuil LEV_MAT qui se calcule en sommant les TDEV affectées des facteurs FV et FP
 C'est un calcul de somme des températures que l'on nomme ici UDEV (unité de développement)
 
-UDEV(i) = UDEV(i-1) + TDEV*FV*FP
-pour i démarrant à DATE_LEV
+
+UDEV(i) = UDEV(i-1) + TDEV(i)*FV*FP
+pour i démarrant à DATE_LEV et UDEV(DATE_LEV)=0
+
 Lorsque UDEV atteint la valeur LEV_MAT alors la récolte est possible. 
 
 
