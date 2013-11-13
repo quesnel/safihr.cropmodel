@@ -137,6 +137,8 @@ class MinimalistAI : public vle::devs::Dynamics
         if (!file.is_open())
             throw ai_open_failure(filename);
 
+        file.imbue(std::locale::classic());
+
         std::string line;
         std::getline(file, line); /* read the header and forget it*/
 

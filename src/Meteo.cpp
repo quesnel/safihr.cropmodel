@@ -76,6 +76,8 @@ public:
         if (!m_input)
             throw file_generator_open(filepath);
 
+        m_input.imbue(std::locale::classic());
+
         read_header();
     }
 
@@ -120,8 +122,6 @@ public:
 private:
     void read_header()
     {
-        m_input.imbue(std::locale::classic());
-
         std::string line;
         if (not std::getline(m_input, line))
             throw file_generator_format(0);

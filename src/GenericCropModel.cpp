@@ -164,6 +164,8 @@ struct SpecieFileReader
     {
         if (!file.is_open())
             throw crop_model_file_open_failure(filename);
+
+        file.imbue(std::locale::classic());
     }
 
     Specie get(const std::string &speciename)
