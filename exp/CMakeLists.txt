@@ -1,1 +1,1 @@
-install(FILES first.vpz DESTINATION exp)
+install(FILES first.vpz compare.vpz DESTINATION exp)

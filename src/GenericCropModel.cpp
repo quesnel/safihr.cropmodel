@@ -451,6 +451,9 @@ public:
     {
         (void)time;
 
+        DTraceModel(vle::fmt("GenericCropModel %1% builded\n") %
+                    getModelName());
+
         previous_status = StatusModel::unavailable;
         new_status = StatusModel::unavailable;
         is_sown = false;
@@ -471,7 +474,6 @@ public:
 
         if (is_sown && previous_status != new_status) {
             vle::devs::ExternalEvent *ret = new vle::devs::ExternalEvent("out");
-
             ret->putAttribute("landunit_id",
                               new vle::value::String(getModelName()));
             ret->putAttribute("specie",
