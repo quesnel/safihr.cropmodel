@@ -27,9 +27,9 @@
 #include <vle/utils/Package.hpp>
 #include <vle/utils/Trace.hpp>
 #include <algorithm>
-#include <map>
 #include <vector>
 #include "AI.hpp"
+#include "Global.hpp"
 
 namespace safihr {
 
@@ -145,7 +145,6 @@ public:
                       return lhs.dmin < rhs.dmin;
                   });
 
-        //DTraceModel(vle::fmt("AI Scheduller: %1%") % date);
         DTraceModel(vle::fmt("AI need to build: %1% models") % date.size());
     }
 
@@ -165,9 +164,9 @@ public:
         std::ofstream result("simulation-outputs.csv");
         if (result.is_open())
             result << std::setprecision(std::numeric_limits <double>::digits10)
-                << std::boolalpha
-                << date
-                << std::endl;
+                   << std::boolalpha
+                   << date
+                   << std::endl;
     }
 
     virtual vle::devs::Time init(const vle::devs::Time &time)
@@ -181,17 +180,17 @@ public:
         int i  = 0;
         std::for_each(date.begin(), date.end(),
                       [this, &i] (const data& /*d*/) {
-                      std::string modelname = std::to_string(i++);
-                      createModel(modelname,
-                                  {"in", "start"},
-                                  {"out"},
-                                  "dyncrop",
-                                  {"species"},
-                                  "crop");
+                          std::string modelname = std::to_string(i++);
+                          createModel(modelname,
+                                      {"in", "start"},
+                                      {"out"},
+                                      "dyncrop",
+                                      {"species"},
+                                      "crop");
 
-                      addConnection("agent", "start", modelname, "start");
-                      addConnection(modelname, "out", "agent", "in");
-                      addConnection("meteo", "out", modelname, "in");
+                          addConnection("agent", "start", modelname, "start");
+                          addConnection(modelname, "out", "agent", "in");
+                          addConnection("meteo", "out", modelname, "in");
                       });
 
         DTraceModel(vle::fmt("CompareDateAI init at %1%") % (date.front().dmin -

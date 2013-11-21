@@ -35,6 +35,7 @@
 #include <iomanip>
 #include <cmath>
 #include <exception>
+#include "Global.hpp"
 
 namespace safihr {
 
@@ -217,26 +218,6 @@ struct SpecieFileReader
         } while (!file.eof());
 
         throw crop_model_unknown_specie(speciename);
-    }
-};
-
-enum class StatusModel { unavailable, sown, raised, flowering, maturity };
-
-std::string to_string(StatusModel status)
-{
-    switch (status) {
-    case StatusModel::unavailable:
-        return "unavailable";
-    case StatusModel::sown:
-        return "sown";
-    case StatusModel::raised:
-        return "raised";
-    case StatusModel::flowering:
-        return "flowering";
-    case StatusModel::maturity:
-        return "maturity";
-    default:
-        throw crop_model_internal_failure();
     }
 };
 

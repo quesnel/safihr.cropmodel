@@ -75,7 +75,7 @@ struct ai_internal_failure : std::runtime_error
  *
  * @return A julian day date.
  */
-static vle::devs::Time ai_convert_date(std::string date)
+inline vle::devs::Time ai_convert_date(std::string date)
 {
     namespace ba = boost::algorithm;
 
