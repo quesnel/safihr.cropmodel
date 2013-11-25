@@ -557,6 +557,15 @@ public:
                 return new vle::value::String(to_string(new_status));
         }
 
+        const GenericModel* mdl = dynamic_cast <GenericModel*>(m_model.get());
+        if (mdl) {
+            if (event.onPort("udev"))
+                return new vle::value::Double(mdl->udev);
+
+            if (event.onPort("tdev"))
+                return new vle::value::Double(mdl->tdev_sum);
+        }
+
         return vle::devs::Dynamics::observation(event);
     };
 };
