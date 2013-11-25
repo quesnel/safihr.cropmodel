@@ -67,7 +67,7 @@ std::ostream& operator<<(std::ostream& out, const data& d)
         vle::utils::DateTime::toJulianDayNumber(d.dmin) %
         vle::utils::DateTime::toJulianDayNumber(d.dmax) %
         vle::utils::DateTime::toJulianDayNumber(d.result) %
-        (std::abs(d.result - d.dmax));
+        (d.dmax - d.result);
 }
 
 std::ostream& operator<<(std::ostream& out, const std::vector <data> &d)
@@ -177,20 +177,34 @@ public:
         if (time > date.front().dmin)
             throw ai_internal_failure(time, date.front().dmin);
 
-        int i  = 0;
-        std::for_each(date.begin(), date.end(),
-                      [this, &i] (const data& /*d*/) {
-                          std::string modelname = std::to_string(i++);
-                          createModel(modelname,
-                                      {"in", "start"},
-                                      {"out"},
-                                      "dyncrop",
-                                      {"species"},
-                                      "crop");
+        static std::vector <unsigned int> to_show({267, 268, 270, 271, 714,
+                                                  715, 718, 729, 730, 731,
+                                                  732, 733, 734});
 
-                          addConnection("agent", "start", modelname, "start");
-                          addConnection(modelname, "out", "agent", "in");
-                          addConnection("meteo", "out", modelname, "in");
+        std::for_each(date.begin(), date.end(),
+                      [=] (const data& d)
+                      {
+                      std::string modelname = std::to_string(d.id);
+                      if (std::binary_search(to_show.begin(), to_show.end(),
+                                             d.id)) {
+                      createModel(modelname,
+                                  {"in", "start"},
+                                  {"out"},
+                                  "dyncrop",
+                                  {"species"},
+                                  "udev-tdev");
+                      } else {
+                      createModel(modelname,
+                                  {"in", "start"},
+                                  {"out"},
+                                  "dyncrop",
+                                  {"species"},
+                                  "");
+                      }
+
+                      addConnection("agent", "start", modelname, "start");
+                      addConnection(modelname, "out", "agent", "in");
+                      addConnection("meteo", "out", modelname, "in");
                       });
 
         DTraceModel(vle::fmt("CompareDateAI init at %1%") % (date.front().dmin -
