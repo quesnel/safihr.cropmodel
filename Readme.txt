@@ -1,7 +1,7 @@
 Safihr Generic Crop Model
 =========================
 
-See Authors.txt and Copying.txt for the list of contributors.
+See *Authors.txt* and *Copying.txt* for the list of contributors.
 
 Requirements
 ------------
@@ -15,5 +15,6 @@ Installation
 ------------
 
 To build the package:
-
+```
     vle-1.1 --package=safihr.model configure build
+```
