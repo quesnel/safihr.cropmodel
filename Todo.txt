@@ -1,0 +1,9 @@
+- `GenericCropModel`:
+  - use a scheduller to compute classic/leap year change in the
+    `vle::devs::Dynamics` model and,
+  - improve the `Model` class with a new virtual function when new year change
+    from class/leap year:
+    ```
+	    virtual void year_change(bool is_leap_year_previous,
+			             bool is_leap_year);
+    ```
