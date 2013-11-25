@@ -28,6 +28,7 @@
 #include <vle/utils/Package.hpp>
 #include <vle/utils/Trace.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <memory>
 #include <algorithm>
 #include <valarray>
@@ -294,15 +295,13 @@ struct GenericModel : Model
     double tdev_sum;
     vle::devs::Time day_lev;
     std::valarray <double> fp;
+    std::valarray <double> fp_leapyear;
     double udev;
     double vdd;
 
-    GenericModel(vle::devs::Time time, const Specie &specie, double latitude)
-        : Model(StatusModel::sown), specie(specie),
-          latitude(latitude), tdev_sum(0.0),
-          day_lev(vle::devs::infinity), udev(0.0), vdd(0.0)
+    void initialize(std::valarray <double> &fp, vle::devs::Time nbday)
     {
-        fp.resize(vle::utils::DateTime::isLeapYear(time) ? 366 : 365);
+        fp.resize(boost::numeric_cast <size_t>(nbday));
 
         if (specie.data[Specie::PBASE] != infinity) {
             double lat = M_PI * latitude / 180.0;
@@ -311,9 +310,9 @@ struct GenericModel : Model
             for (uint i = 0, end = fp.size(); i < end; ++i) {
                 double dec = std::asin(
                     0.3978 * std::sin(
-                        (2.0 * M_PI * (jjulian - 80.0) / 365.0) +
+                        (2.0 * M_PI * (jjulian - 80.0) / nbday) +
                         ((0.0335 * (std::sin(2.0 * M_PI * jjulian) -
-                                    std::sin(2.0 * M_PI * 80.0))) / 365.0)));
+                                    std::sin(2.0 * M_PI * 80.0))) / nbday)));
 
                 double ph = 24.0 *
                     (std::acos(
@@ -327,14 +326,20 @@ struct GenericModel : Model
                                   specie.data[Specie::PBASE]));
                 ++jjulian;
             }
-            DTraceModel((vle::fmt("[%1%] have fp %2% %3% %4% %5% ... %6%...\n")
-                         % specie.name %
-                         fp[0] % fp[1] % fp[2] % fp[3] % fp[100]).str());
         } else {
-            DTraceModel((vle::fmt("[%1%] have fp equal to 1\n")
-                         % specie.name).str());
             fp = 1;
         }
+    }
+
+    GenericModel(vle::devs::Time time, const Specie &specie, double latitude)
+        : Model(StatusModel::sown), specie(specie),
+          latitude(latitude), tdev_sum(0.0),
+          day_lev(vle::devs::infinity), udev(0.0), vdd(0.0)
+    {
+        (void)time;
+
+        initialize(fp, 365.0);
+        initialize(fp_leapyear, 366.0);
 
         udev = 0.0;
         vdd = 0.0;
@@ -349,6 +354,13 @@ struct GenericModel : Model
 
     virtual StatusModel compute(vle::devs::Time time, double tmoy) override
     {
+        if (vle::utils::DateTime::dayOfYear(time) == 1) {
+            if (vle::utils::DateTime::isLeapYear(time))
+                std::swap(fp, fp_leapyear);
+            else if (vle::utils::DateTime::isLeapYear(time - 1.0))
+                std::swap(fp, fp_leapyear);
+        }
+
         double tdev = (tmoy >= specie.data[Specie::TMAXDEV]) ?
             std::max(0.0, specie.data[Specie::TMAXDEV]
                      - specie.data[Specie::TBASE]) :
