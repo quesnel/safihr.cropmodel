@@ -31,6 +31,7 @@
 #include <exception>
 #include <vle/utils/i18n.hpp>
 #include <vle/utils/DateTime.hpp>
+#include "Global.hpp"
 
 namespace safihr {
 
@@ -85,9 +86,9 @@ inline vle::devs::Time ai_convert_date(std::string date)
                                     ba::is_any_of("/"),
                                     ba::token_compress_on));
 
-    int day = std::stoi(boost::copy_range <std::string>(*i++));
-    int month = std::stoi(boost::copy_range <std::string>(*i++));
-    int year = std::stoi(boost::copy_range <std::string>(*i++));
+    int day = safihr::stoi(boost::copy_range <std::string>(*i++));
+    int month = safihr::stoi(boost::copy_range <std::string>(*i++));
+    int year = safihr::stoi(boost::copy_range <std::string>(*i++));
 
     boost::gregorian::date d(year, month, day);
 

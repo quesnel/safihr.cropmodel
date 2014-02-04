@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 INRA
+ * Copyright (C) 2013-2014 INRA
  *
  * Gauthier Quesnel <gauthier.quesnel@toulouse.inra.fr>
  *
@@ -205,10 +205,17 @@ struct SpecieFileReader
                                        if (str == "infinity")
                                            return infinity;
                                        else
-                                           return std::stod(str);
+                                           return safihr::stod(str);
                                    });
 
                     DTraceModel((vle::fmt("%1%") % specie).str());
+
+                    //assert(specie.data[Specie::SEM_LEV] == 150);
+                    //assert(specie.data[Specie::LEV_MAT] == 1232);
+                    //assert(specie.data[Specie::TBASE] == 0);
+                    //assert(specie.data[Specie::TMAXDEV] == 28);
+                    //assert(specie.data[Specie::TFROID] == 6.5);
+                    //assert(specie.data[Specie::PBASE] == 6.3);
 
                     return specie;
                 }
@@ -225,9 +232,10 @@ struct SpecieFileReader
 struct Model
 {
     StatusModel status;
+    vle::devs::Time day_lev;
 
     Model(StatusModel status)
-        : status(status)
+        : status(status), day_lev(vle::devs::infinity)
     {}
 
     virtual ~Model()
@@ -267,6 +275,7 @@ struct LinModel : Model
         case StatusModel::sown:
             if (sum >= 50.0) {
                 status = StatusModel::raised;
+                Model::day_lev = time;
                 sum = 0.0;
             }
             break;
@@ -293,7 +302,6 @@ struct GenericModel : Model
     const Specie specie;
     double latitude;
     double tdev_sum;
-    vle::devs::Time day_lev;
     std::valarray <double> fp;
     std::valarray <double> fp_leapyear;
     double udev;
@@ -332,9 +340,8 @@ struct GenericModel : Model
     }
 
     GenericModel(vle::devs::Time time, const Specie &specie, double latitude)
-        : Model(StatusModel::sown), specie(specie),
-          latitude(latitude), tdev_sum(0.0),
-          day_lev(vle::devs::infinity), udev(0.0), vdd(0.0)
+        : Model(StatusModel::sown), specie(specie), latitude(latitude),
+        tdev_sum(0.0), udev(0.0), vdd(0.0)
     {
         (void)time;
 
@@ -344,7 +351,6 @@ struct GenericModel : Model
         udev = 0.0;
         vdd = 0.0;
         tdev_sum = 0.0;
-        day_lev = vle::devs::infinity;
     }
 
     virtual std::string name() const
@@ -362,15 +368,16 @@ struct GenericModel : Model
         }
 
         double tdev = (tmoy >= specie.data[Specie::TMAXDEV]) ?
+            //specie.data[Specie::TMAXDEV] :
             std::max(0.0, specie.data[Specie::TMAXDEV]
                      - specie.data[Specie::TBASE]) :
             std::max(0.0, tmoy - specie.data[Specie::TBASE]);
 
         tdev_sum += tdev;
 
-        if (tdev_sum >= specie.data[Specie::SEM_LEV] &&
-            day_lev == vle::devs::infinity) {
-            day_lev = time;
+        if (tdev_sum >= specie.data[Specie::SEM_LEV] && Model::day_lev ==
+            vle::devs::infinity) {
+            Model::day_lev = time;
             status = StatusModel::raised;
 
             DTraceModel((vle::fmt("[%1%] is lev\n") % specie.name).str());
@@ -383,7 +390,7 @@ struct GenericModel : Model
                                      specie.data[Specie::AMPFROID]))));
 
         double old_vdd = vdd;
-        vdd = time < day_lev ? 0.0 : old_vdd + jvi;
+        vdd = time < Model::day_lev ? 0.0 : old_vdd + jvi;
 
         if (status == StatusModel::raised) {
             double fv = specie.data[Specie::VBASE] == 1.0 ? 1.0 :
@@ -471,6 +478,8 @@ public:
                               new vle::value::String(getModelName()));
             ret->putAttribute("specie",
                               new vle::value::String(m_model->name()));
+            ret->putAttribute("day_lev",
+                              new vle::value::Double(m_model->day_lev));
             ret->putAttribute("status",
                               new vle::value::String(to_string(new_status)));
 

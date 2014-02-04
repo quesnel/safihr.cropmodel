@@ -37,13 +37,14 @@ struct data
 {
     data(unsigned int id,
          const std::string& name,
-         float surface1,
-         float surface2,
+         double surface1,
+         double surface2,
+         vle::devs::Time dlev,
          vle::devs::Time dmin,
          vle::devs::Time dmax,
          vle::devs::Time duration)
         : id(id), name(name), surface1(surface1), surface2(surface2),
-        dmin(dmin), dmax(dmax), duration(duration), result(-1.0)
+        dlev(dlev), dmin(dmin), dmax(dmax), duration(duration), result(-1.0)
     {
 #ifndef DNDEBUG
         if ((dmax - dmin) != duration)
@@ -53,8 +54,9 @@ struct data
 
     unsigned int id;
     std::string name;
-    float surface1;
-    float surface2;
+    double surface1;
+    double surface2;
+    vle::devs::Time dlev;
     vle::devs::Time dmin;
     vle::devs::Time dmax;
     vle::devs::Time duration;
@@ -63,8 +65,9 @@ struct data
 
 std::ostream& operator<<(std::ostream& out, const data& d)
 {
-    return out << vle::fmt("%1%;%2%;%3%;%4%;%5%;%6%") % d.id % d.name %
+    return out << vle::fmt("%1%;%2%;%3%;%4%;%5%;%6%;%7%") % d.id % d.name %
         vle::utils::DateTime::toJulianDayNumber(d.dmin) %
+        vle::utils::DateTime::toJulianDayNumber(d.dlev) %
         vle::utils::DateTime::toJulianDayNumber(d.dmax) %
         vle::utils::DateTime::toJulianDayNumber(d.result) %
         (d.dmax - d.result);
@@ -72,7 +75,7 @@ std::ostream& operator<<(std::ostream& out, const data& d)
 
 std::ostream& operator<<(std::ostream& out, const std::vector <data> &d)
 {
-    out << "id_parcelle;libelle_occup;Date-semis;Date-recolte-observee;"
+    out << "id_parcelle;libelle_occup;Date-semis;Date-Lev;Date-recolte-observee;"
         "Date-recolte-simulee;distance\n";
 
     std::copy(d.begin(), d.end(),
@@ -85,7 +88,7 @@ class CompareDateAI : public vle::devs::Executive
 {
     std::vector <data> date;
     vle::devs::Time current_time;
-    int index;
+    size_t index;
 
     void initialize_date(const std::string &filename)
     {
@@ -118,9 +121,10 @@ class CompareDateAI : public vle::devs::Executive
                 std::string dmax = boost::copy_range <std::string>(*i++);
                 std::string dura = boost::copy_range <std::string>(*i++);
 
-                date.emplace_back(date.size(), name, std::stof(sur1),
-                                  std::stof(sur2), ai_convert_date(dmin),
-                                  ai_convert_date(dmax), std::stof(dura));
+                date.emplace_back(date.size(), name, safihr::stod(sur1),
+                                  safihr::stod(sur2), vle::devs::infinity,
+                                  ai_convert_date(dmin), ai_convert_date(dmax),
+                                  safihr::stod(dura));
             } catch (const std::exception &e) {
                 (void)e;
                 throw ai_format_failure(i);
@@ -146,6 +150,7 @@ public:
                   });
 
         DTraceModel(vle::fmt("AI need to build: %1% models") % date.size());
+        DTraceModel(vle::fmt("Table: %1%") % date);
     }
 
     virtual ~CompareDateAI()
@@ -215,7 +220,7 @@ public:
 
     virtual vle::devs::Time timeAdvance() const
     {
-        if (!date.empty())
+        if (!date.empty() && index < date.size())
             return (*(date.begin() + index)).dmin - current_time;
         else
             return vle::devs::infinity;
@@ -228,7 +233,7 @@ public:
 
         DTraceModel(vle::fmt("CompareDateAI: output at %1%") % time);
 
-        if (date.empty())
+        if (date.empty() || index >= date.size())
             return;
 
         auto low = std::lower_bound(date.begin() + index, date.end(),
@@ -261,7 +266,7 @@ public:
     {
         current_time = time;
 
-        if (!date.empty()) {
+        if (!date.empty() && index < date.size()) {
             auto low = std::lower_bound(date.begin() + index, date.end(),
                                         current_time,
                                         [] (const data& d, vle::devs::Time value)
@@ -270,6 +275,8 @@ public:
                                         });
 
             index += std::distance(date.begin() + index, low);
+            DTraceModel(vle::fmt("%1% internalTransition index=%2%") %
+                        getModelName() % index);
         }
     }
 
@@ -280,8 +287,9 @@ public:
 
         for (auto &msg : msgs) {
             unsigned int landid =
-                std::stoi(msg->attributes().getString("landunit_id"));
+                safihr::stoi(msg->attributes().getString("landunit_id"));
             std::string status = msg->attributes().getString("status");
+            double day_lev = msg->attributes().getDouble("day_lev");
 
             if (status == "maturity") {
                 auto it = std::find_if(date.begin(), date.end(),
@@ -289,6 +297,8 @@ public:
                                        {
                                            return d.id == landid;
                                        });
+
+                it->dlev = day_lev;
 
                 if (it != date.end() && it->result == -1)
                     it->result = time;

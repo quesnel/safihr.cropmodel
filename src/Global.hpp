@@ -27,6 +27,9 @@
 
 #include <exception>
 #include <string>
+#include <vle/utils/i18n.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/cast.hpp>
 
 namespace safihr {
 
@@ -34,6 +37,14 @@ struct global_unknown_model_status : std::runtime_error
 {
     global_unknown_model_status()
         : std::runtime_error("Unknown model status")
+    {}
+};
+
+struct global_conversion_error : std::runtime_error
+{
+    global_conversion_error(const std::string &str)
+        : std::runtime_error(
+            (vle::fmt("Fail to convert `%1%' in a number") % str).str())
     {}
 };
 
@@ -56,6 +67,25 @@ inline std::string to_string(StatusModel status)
         throw global_unknown_model_status();
     }
 };
+
+inline double stod(const std::string &str)
+{
+    try {
+        return boost::lexical_cast <double>(str);
+    } catch (...) {
+        throw global_conversion_error(str);
+    }
+}
+
+inline int stoi(const std::string &str)
+{
+    try {
+        long int ret = boost::lexical_cast <long int>(str);
+        return boost::numeric_cast <int>(ret);
+    } catch (...) {
+        throw global_conversion_error(str);
+    }
+}
 
 }
 

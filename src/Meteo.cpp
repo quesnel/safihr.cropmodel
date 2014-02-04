@@ -29,6 +29,7 @@
 #include <fstream>
 #include <string>
 #include <exception>
+#include "Global.hpp"
 
 namespace safihr {
 
@@ -108,9 +109,9 @@ public:
 
         try {
             m_date = boost::copy_range <std::string>(*i++);
-            m_tmin = std::stod(boost::copy_range <std::string>(*i++));
-            m_tmax = std::stod(boost::copy_range <std::string>(*i++));
-            m_tmoy = std::stod(boost::copy_range <std::string>(*i++));
+            m_tmin = safihr::stod(boost::copy_range <std::string>(*i++));
+            m_tmax = safihr::stod(boost::copy_range <std::string>(*i++));
+            m_tmoy = safihr::stod(boost::copy_range <std::string>(*i++));
         } catch (const std::exception &e) {
             (void)e;
             throw file_generator_format(m_line);
